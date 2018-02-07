@@ -12,6 +12,9 @@
 
 Overlay of hub.docker.com/r/plugins/docker that sets ukhomeoffice drone docker dind
 
+The main reason this had to exist is because [drone looks for an exact string match of `plugins/docker`](https://github.com/drone/drone/blob/923de1c4f20ea596bd17d8e4c7fad1e5f192fa87/cmd/drone-server/server.go#L111) and tries to enable privilaged which isn't allowed in ACP.
+You can also work around it by specifying the full url and specifying the env var of the docker host, the same as I've done in the [Dockerfile](./Dockerfile) here
+
 ## Example Usage
 ```yaml
 pipeline:
