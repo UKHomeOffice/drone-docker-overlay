@@ -1,0 +1,39 @@
+pipeline:
+
+  build_image:
+    image: docker:18.03.0-ce
+    environment:
+      - DOCKER_HOST=tcp://172.17.0.1:2375
+    commands:
+      - docker build -t drone-docker:$${DRONE_COMMIT_SHA} .
+    when:
+      event: [push, tag]
+
+  latest_image_to_quay:
+    image: docker:18.03.0-ce
+    secrets:
+      - docker_password
+    environment:
+      - DOCKER_HOST=tcp://172.17.0.1:2375
+    commands:
+      - docker login -u="ukhomeofficedigital+drone_docker_overlay" -p=$${DOCKER_PASSWORD} quay.io
+      - docker tag drone-docker:$${DRONE_COMMIT_SHA} quay.io/ukhomeofficedigital/drone-docker:$${DRONE_COMMIT_SHA}
+      - docker tag drone-docker:$${DRONE_COMMIT_SHA} quay.io/ukhomeofficedigital/drone-docker:latest
+      - docker push quay.io/ukhomeofficedigital/drone-docker:$${DRONE_COMMIT_SHA}
+      - docker push quay.io/ukhomeofficedigital/drone-docker:latest
+    when:
+      event: push
+      branch: master
+
+  tag_image_to_quay:
+    image: docker:18.03.0-ce
+    secrets:
+      - docker_password
+    environment:
+      - DOCKER_HOST=tcp://172.17.0.1:2375
+    commands:
+      - docker login -u="ukhomeofficedigital+drone_docker_overlay" -p=$${DOCKER_PASSWORD} quay.io
+      - docker tag drone-docker:$${DRONE_COMMIT_SHA} quay.io/ukhomeofficedigital/drone-docker:$${DRONE_TAG}
+      - docker push quay.io/ukhomeofficedigital/drone-docker:$${DRONE_TAG}
+    when:
+      event: tag
